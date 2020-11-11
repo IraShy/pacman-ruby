@@ -1,7 +1,12 @@
-To run the program, run the following command in terminal:
+To run the program, cd to pacman/lib and run the following command in terminal:
 
 ```
 ruby main.rb 
+```
+
+To run tests:
+```
+rspec
 ```
 
 Code problem details:
