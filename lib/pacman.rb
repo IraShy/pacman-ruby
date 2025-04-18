@@ -1,59 +1,49 @@
+require_relative '../errors/cant_move'
+
 class Pacman
   attr_reader :placed, :current_position
-  def initialize
-    @current_position = {}
-    @movements = []
-    @directions = {north: 1, east: 2, south: 3, west: 4}
-    @moving_directions = {north: ['Y', 1], south: ['Y', -1], east: ['X', 1], west: ['X', -1]}
+  def initialize(grid_num)
+    @grid_num = grid_num
+    # @current_position = { X: 0, Y: 0, face: 'north' }
+    @directions = { north: 1, east: 2, south: 3, west: 4 }
+    @moving_directions = { north: ['Y', 1], south: ['Y', -1], east: ['X', 1], west: ['X', -1] }
     @placed = false
   end
 
+  # ensures that turning right from west and left from north results in facing the correct direction
   def set_direction(num)
-  # ensuring that turning right from west and left from north results in facing the correct direction
-
     num %= 4
-    if num < 1
-      num = 4
-    end
+    num = 4 if num < 1
     num
   end
 
-  def facing
-  # returning current facing direction
-    @current_position[:face]
-  end
-
+  # puts the Pacman on the grid in positon X,Y and facing NORTH,SOUTH, EAST or WEST.
   def place(x, y, f)
-  # PLACE will put the Pacman on the grid in positon X,Y and facing NORTH,SOUTH, EAST or WEST.
-
-    if ['north', 'east', 'south', 'west'].include?(f) && (0..4).include?(x) && (0..4).include?(y)
-      @current_position = {X: x, Y: y, face: f}
-      @movements = []
-      @placed = true
-    else 
-      puts 'Wrong input!'
-    end
+    @current_position = { X: x, Y: y, face: f }
+    @placed = true
     self
   end
 
-  def move
-  # MOVE will move Pacman one unit forward in the direction it is currently facing
+  # returns current facing direction
+  def facing
+    @current_position[:face]
+  end
 
+  # move Pacman one unit forward in the direction it is currently facing
+  def move
     facing = self.facing
     # axis of movement (x or y), moving direction (positive or negative), and starting point:
     axis = @moving_directions[:"#{facing}"][0]
     delta = @moving_directions[:"#{facing}"][1]
     coordinate = @current_position[:"#{axis}"]
 
-    #preventing the pacman from moving off the grid
-    if coordinate + delta > 4 || coordinate + delta < 0
-      puts "I can't move! Turn or replace me."
-      self.report
+    # preventing the pacman from moving off the grid
+    if coordinate + delta > @grid_num || coordinate + delta < 0
+      raise CantMoveError
     else
       @current_position[:"#{axis}"] = delta + coordinate
     end
 
-    @movements << 'MOVE'
     self
   end
 
@@ -62,23 +52,19 @@ class Pacman
   def left
     facing = self.facing
     @current_position[:face] = @directions.key(set_direction(@directions[:"#{facing}"] - 1))
-    @movements << 'LEFT'
+
     self
   end
 
   def right
     facing = self.facing
     @current_position[:face] = @directions.key(set_direction(@directions[:"#{facing}"] + 1))
-    @movements << 'RIGHT'
+
     self
   end
 
+  # announce the X,Y and F of Pacman
   def report
-  # REPORT will announce the X,Y and F of Pacman
-    
-    puts "Reporting:"
     puts "Pacman is currently at (#{@current_position[:X]},#{@current_position[:Y]}) and facing #{@current_position[:face].upcase}"
-    puts "Movements since the last placement: #{@movements}"
   end
 end
-
